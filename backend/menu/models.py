@@ -21,3 +21,6 @@ class MenuItems(models.Model):
 
     image = models.ImageField(upload_to='menu_images',blank=True,null=True)
 
+
+
+

@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'accounts',
     'menu',
+    'profiles',
     'debug_toolbar',
 ]
 
