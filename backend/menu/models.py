@@ -6,7 +6,7 @@ class Food(models.Model):
     description = models.TextField(blank = True)
     is_veg = models.BooleanField(null=True,blank = True)
 
-    created_by_user = models.BooleanField(default = False)
+    created_by_user = models.BooleanField(default = True)
     approved = models.BooleanField(default = False)
 
     created_at = models.DateTimeField(auto_now_add=True)

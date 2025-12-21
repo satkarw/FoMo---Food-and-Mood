@@ -22,7 +22,7 @@ class CookieTokenObtainPairView(TokenObtainPairView):
         access = resp.data.get("access")
         refresh = resp.data.get("refresh")
 
-        response = Response({"msg": "logged in"}, status=status.HTTP_200_OK)
+        response = Response({"access":access,"refresh":refresh}, status=status.HTTP_200_OK)
 
         #setting http only cookie
 
