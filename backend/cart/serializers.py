@@ -10,7 +10,7 @@ class CartItemSerializer(serializers.ModelSerializer):
     price = serializers.DecimalField(
         source = "menu_item.price",
         read_only=True,
-        max_digits=10, decimal_places=2)
+        max_digits=10, decimal_places=2 )
 
     class Meta:
         model = CartItem
