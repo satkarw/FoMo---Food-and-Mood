@@ -7,6 +7,7 @@ from rest_framework import status, permissions, generics
 from rest_framework.response import Response
 
 from .serializers import RegisterSerializer
+from .authentication import CookieJWTAuthentication
 
 
 class RegisterView(generics.CreateAPIView):
@@ -22,6 +23,9 @@ class CookieTokenObtainPairView(TokenObtainPairView):
         access = resp.data.get("access")
         refresh = resp.data.get("refresh")
 
+        print("ACCESS TOKEN:", access)  # Add this
+        print("REFRESH TOKEN:", refresh)  # Add this
+
         response = Response({"access":access,"refresh":refresh}, status=status.HTTP_200_OK)
 
         #setting http only cookie
@@ -32,7 +36,7 @@ class CookieTokenObtainPairView(TokenObtainPairView):
             httponly=True,
             secure=False,  #change to True in production
             samesite = "Lax",
-            max_age = 300
+            max_age = 60 * 60 * 24 * 5,
 
         )
 
@@ -86,8 +90,10 @@ class LogoutView(APIView):
         return response
 
 class CurrentUserView(APIView):
+    authentication_classes = [CookieJWTAuthentication]
     permission_classes = [permissions.IsAuthenticated]
-    def get(self,request):
+
+    def get(self, request):
         user = request.user
         return Response({
             "id": user.id,

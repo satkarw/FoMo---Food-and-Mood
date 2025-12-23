@@ -20,7 +20,7 @@ class PlaceOrderView(APIView):
     def post(self,request):
         cart = request.user.cart
 
-        if not cart.items.exits():
+        if not cart.items.exists():
             return Response(
                 {'error':"cart is empty"},
                 status=status.HTTP_400_BAD_REQUEST
@@ -29,11 +29,12 @@ class PlaceOrderView(APIView):
         total = 0
 
         for item  in cart.items.all():
+            
             OrderItem.objects.create(
                 order = order,
                 menu_item = item.menu_item,
                 quantity = item.quantity,
-                price = item.price,
+                price = item.menu_item.price,
             )
 
             total += item.menu_item.price * item.quantity
@@ -54,8 +55,10 @@ class MyOrderView(APIView):
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = OrderSerializer
 
-    def get_queryset(self):
-        return Order.objects.filter(user = self.request.user)
+    def get(self, request):
+        orders = Order.objects.filter(user = request.user)
+        serializer = self.serializer_class(orders, many=True)
+        return Response(serializer.data)
 
 class AllOrdersView(APIView):
     permission_classes = [permissions.IsAdminUser]

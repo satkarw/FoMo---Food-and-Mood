@@ -1,0 +1,310 @@
+"use client"
+
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { Search, Heart, ShoppingCart, Leaf } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+import { apiFetch } from '../lib/api';
+
+// Menu Item Card Component
+const MenuItemCard = ({ item, index }) => {
+  const [isHovered, setIsHovered] = useState(false);
+  const [isFavorited, setIsFavorited] = useState(false);
+  const { user } = useAuth();
+  const router = useRouter();
+
+  const handleAddToCart = () => {
+    if (!user) {
+      router.push('/login');
+      return;
+    }
+    console.log('Added to cart:', item);
+    // TODO: Add cart functionality
+  };
+
+  const handleToggleFavorite = () => {
+    if (!user) {
+      router.push('/login');
+      return;
+    }
+    setIsFavorited(!isFavorited);
+    console.log('Toggled favorite:', item);
+    // TODO: Add favorites functionality
+  };
+
+  return (
+    <div
+      className="group relative bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2"
+      style={{
+        animation: `fadeInUp 0.6s ease-out ${index * 0.1}s forwards`,
+        opacity: 0
+      }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      {/* Image Container */}
+      <div className="relative h-56 overflow-hidden">
+        <img
+          src={item.image}
+          alt={item.food.name}
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+        />
+        
+        {/* Veg/Non-veg Badge */}
+        {item.food.is_veg && (
+          <div className="absolute top-3 left-3 bg-white px-3 py-1 rounded-full flex items-center gap-1 shadow-md">
+            <Leaf size={16} className="text-green-600" />
+            <span className="text-xs font-semibold text-green-600">VEG</span>
+          </div>
+        )}
+        
+        {/* Favorite Button */}
+        <button
+          onClick={handleToggleFavorite}
+          className="absolute top-3 right-3 bg-white p-2 rounded-full shadow-md transition-all duration-300 hover:scale-110"
+          style={{
+            opacity: isHovered || isFavorited ? 1 : 0
+          }}
+        >
+          <Heart
+            size={20}
+            className={`transition-colors duration-300 ${
+              isFavorited ? 'fill-red-500 text-red-500' : 'text-gray-400'
+            }`}
+          />
+        </button>
+
+        {/* Availability Overlay */}
+        {!item.available && (
+          <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center">
+            <span className="text-white text-lg font-semibold">Unavailable</span>
+          </div>
+        )}
+      </div>
+
+      {/* Content */}
+      <div className="p-5">
+        {/* Title and Price */}
+        <div className="flex justify-between items-start mb-2">
+          <h3 className="text-xl font-bold text-gray-800 capitalize">
+            {item.food.name}
+          </h3>
+          <span
+            className="text-xl font-bold ml-2"
+            style={{ color: '#FF6B35' }}
+          >
+            ₹{parseFloat(item.price).toFixed(0)}
+          </span>
+        </div>
+
+        {/* Description */}
+        <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+          {item.food.description}
+        </p>
+
+        {/* Add to Cart Button */}
+        <button
+          onClick={handleAddToCart}
+          disabled={!item.available}
+          className="w-full py-3 px-4 rounded-xl font-semibold text-white flex items-center justify-center gap-2 transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+          style={{
+            backgroundColor: '#FF6B35',
+            boxShadow: item.available ? '0 4px 12px rgba(255, 107, 53, 0.3)' : 'none'
+          }}
+        >
+          <ShoppingCart size={20} />
+          <span>Add to Cart</span>
+        </button>
+      </div>
+
+      {/* Decorative corner accent */}
+      <div
+        className="absolute bottom-0 right-0 w-20 h-20 opacity-5"
+        style={{
+          background: 'radial-gradient(circle at bottom right, #FF6B35 0%, transparent 70%)'
+        }}
+      />
+    </div>
+  );
+};
+
+// Main Menu Component
+const FoMoMenu = () => {
+  const [menuItems, setMenuItems] = useState([]);
+  const [filteredItems, setFilteredItems] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterType, setFilterType] = useState('all'); // 'all', 'veg', 'non-veg'
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Fetch menu items
+  useEffect(() => {
+    const fetchMenuItems = async () => {
+      try {
+        const response = await fetch('http://127.0.0.1:8000/api/menu/menu-items');
+        if (!response.ok) throw new Error('Failed to fetch menu items');
+        const data = await response.json();
+        setMenuItems(data);
+        setFilteredItems(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMenuItems();
+  }, []);
+
+  // Filter and search logic
+  useEffect(() => {
+    let filtered = menuItems;
+
+    // Apply veg/non-veg filter
+    if (filterType === 'veg') {
+      filtered = filtered.filter(item => item.food.is_veg === true);
+    } else if (filterType === 'non-veg') {
+      filtered = filtered.filter(item => item.food.is_veg === false);
+    }
+
+    // Apply search query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(item =>
+        item.food.name.toLowerCase().includes(query) ||
+        item.food.description.toLowerCase().includes(query)
+      );
+    }
+
+    setFilteredItems(filtered);
+  }, [searchQuery, filterType, menuItems]);
+
+  return (
+    <div className="min-h-screen w-full" style={{ backgroundColor: '#feefd3' }}>
+      {/* Animations */}
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          @keyframes fadeInUp {
+            from {
+              opacity: 0;
+              transform: translateY(30px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+          
+          .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+          }
+        `
+      }} />
+
+      <div className="max-w-7xl mx-auto px-6 py-12">
+        {/* Header Section */}
+        <div className="text-center mb-12">
+          <h1
+            className="text-5xl md:text-6xl font-bold mb-4"
+            style={{ color: '#FF6B35' }}
+          >
+            Our Menu
+          </h1>
+          <p className="text-xl text-gray-700">
+            Discover delicious dishes crafted with love
+          </p>
+        </div>
+
+        {/* Search and Filter Section */}
+        <div className="mb-8 space-y-4">
+          {/* Search Bar */}
+          <div className="relative max-w-2xl mx-auto">
+            <Search
+              className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
+              size={20}
+            />
+            <input
+              type="text"
+              placeholder="Search by name or description..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-12 pr-4 py-4 rounded-full border-2 border-transparent bg-white shadow-lg focus:outline-none focus:shadow-xl transition-all duration-300"
+              style={{
+                borderColor: searchQuery ? '#FF6B35' : 'transparent'
+              }}
+            />
+          </div>
+
+          {/* Filter Buttons */}
+          <div className="flex justify-center gap-3">
+            {['all', 'veg', 'non-veg'].map((filter) => (
+              <button
+                key={filter}
+                onClick={() => setFilterType(filter)}
+                className="px-6 py-2 rounded-full font-semibold transition-all duration-300 transform hover:scale-105"
+                style={{
+                  backgroundColor: filterType === filter ? '#FF6B35' : 'white',
+                  color: filterType === filter ? 'white' : '#FF6B35',
+                  boxShadow: filterType === filter
+                    ? '0 4px 12px rgba(255, 107, 53, 0.3)'
+                    : '0 2px 8px rgba(0, 0, 0, 0.1)'
+                }}
+              >
+                {filter === 'all' ? 'All' : filter === 'veg' ? 'Vegetarian' : 'Non-Veg'}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Loading State */}
+        {loading && (
+          <div className="text-center py-20">
+            <div
+              className="inline-block w-12 h-12 border-4 border-t-transparent rounded-full animate-spin"
+              style={{ borderColor: '#FF6B35', borderTopColor: 'transparent' }}
+            />
+            <p className="mt-4 text-gray-600 text-lg">Loading delicious items...</p>
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && (
+          <div className="text-center py-20">
+            <p className="text-red-500 text-lg">Error: {error}</p>
+          </div>
+        )}
+
+        {/* Results Count */}
+        {!loading && !error && (
+          <div className="text-center mb-6">
+            <p className="text-gray-600">
+              {filteredItems.length} {filteredItems.length === 1 ? 'item' : 'items'} found
+            </p>
+          </div>
+        )}
+
+        {/* Menu Items Grid */}
+        {!loading && !error && filteredItems.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {filteredItems.map((item, index) => (
+              <MenuItemCard key={item.id} item={item} index={index} />
+            ))}
+          </div>
+        )}
+
+        {/* No Results */}
+        {!loading && !error && filteredItems.length === 0 && (
+          <div className="text-center py-20">
+            <p className="text-gray-600 text-xl">No items found matching your criteria</p>
+            <p className="text-gray-500 mt-2">Try adjusting your search or filters</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default FoMoMenu;
