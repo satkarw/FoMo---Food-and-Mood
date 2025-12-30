@@ -39,6 +39,8 @@ export default function MenuItemCard({ item, index }) {
       setAddingToCart(false);
     }
   };
+  
+
 
   const handleToggleFavorite = () => {
     if (!user) {
