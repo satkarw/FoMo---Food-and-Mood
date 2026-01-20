@@ -1,4 +1,4 @@
-Django==6.0.1
+ Django==6.0.1
 djangorestframework==3.16.1
 gunicorn
 dj-database-url
@@ -7,4 +7,5 @@ whitenoise
 django-cors-headers
 djangorestframework-simplejwt
 mysqlclient
-cloudinary-storage
+cloudinary>=1.36.0
+django-cloudinary-storage>=0.3.0
