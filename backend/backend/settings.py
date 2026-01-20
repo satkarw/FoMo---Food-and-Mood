@@ -121,17 +121,28 @@ TEMPLATES = [
 # ------------------------------------------------------------------------------
 
 DATABASE_URL = os.environ.get("DATABASE_URL")
-if not DATABASE_URL:
-    raise RuntimeError("DATABASE_URL is not set")
 
-DATABASES = {
-    "default": dj_database_url.parse(
-        DATABASE_URL,
-        engine="django.db.backends.mysql",
-        conn_max_age=600,
-        ssl_require=False,  # MySQL does not like 'sslmode'
-    )
-}
+if DATABASE_URL:
+    # Production: Auto-detect PostgreSQL or MySQL from DATABASE_URL
+    DATABASES = {
+        "default": dj_database_url.config(
+            default=DATABASE_URL,
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
+    }
+else:
+    # Local development: MySQL
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.mysql",
+            "NAME": "your_local_db_name",  # ← Change to your local DB name
+            "USER": "root",  # ← Change to your MySQL user
+            "PASSWORD": "your_password",  # ← Change to your MySQL password
+            "HOST": "localhost",
+            "PORT": "3306",
+        }
+    }
 # ------------------------------------------------------------------------------
 # PASSWORD VALIDATION
 # ------------------------------------------------------------------------------
