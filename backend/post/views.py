@@ -1,6 +1,6 @@
 from pyexpat.errors import messages
 
-from debug_toolbar.store import serialize
+# from debug_toolbar.store import serialize
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import permissions, status
