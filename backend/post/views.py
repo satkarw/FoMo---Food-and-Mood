@@ -56,19 +56,27 @@ class PostCreateView(APIView):
         )
 
         if serializer.is_valid():
-            post = serializer.save()
+            try:
+                post = serializer.save()
 
-            post = (
-                Post.objects
-                .select_related("user__profile")
-                .prefetch_related("likes")
-                .get(id=post.id)
-            )
+                post = (
+                    Post.objects
+                    .select_related("user__profile")
+                    .prefetch_related("likes")
+                    .get(id=post.id)
+                )
 
-            return Response(
-                PostSerializer(post, context={"request": request}).data,
-                status=status.HTTP_201_CREATED
-            )
+                return Response(
+                    PostSerializer(post, context={"request": request}).data,
+                    status=status.HTTP_201_CREATED
+                )
+            except Exception as e:
+                # Log the exception to the console or a log file
+                print(f"Error creating post: {e}")
+                return Response(
+                    {"error": "An unexpected error occurred."},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

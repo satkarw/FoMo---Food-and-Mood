@@ -18,8 +18,16 @@ class ProfileView(APIView):
         profile = get_object_or_404(Profile, user=request.user)
         serializer = ProfileSerializer(profile, data=request.data, partial=True)  # partial=True is important
         if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
+            try:
+                serializer.save()
+                return Response(serializer.data)
+            except Exception as e:
+                # Log the exception to the console or a log file
+                print(f"Error updating profile: {e}")
+                return Response(
+                    {"error": "An unexpected error occurred."},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class OtherUserProfileView(APIView):
