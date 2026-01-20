@@ -10,7 +10,9 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 import os
+import os
 from pathlib import Path
+import dj_database_url
 
 
 
@@ -22,12 +24,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-*(8s07u-97!xu&b%x@6#x&uhyg^!h@znke))p^frk(2(vgm!2k'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-*(8s07u-97!xu&b%x@6#x&uhyg^!h@znke))p^frk(2(vgm!2k')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DJANGO_DEBUG', 'True').lower() == 'true'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', '127.0.0.1,localhost').split(',')
+CSRF_TRUSTED_ORIGINS = ['http://localhost:3000', 'http://127.0.0.1:3000', os.environ.get('FRONTEND_URL', '')]
 
 
 # Application definition
@@ -42,6 +45,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
+    'cloudinary_storage',
     'accounts',
     'menu',
     'profiles',
@@ -59,6 +63,7 @@ AUTH_USER_MODEL = 'accounts.User'
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -92,15 +97,10 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-
-        "ENGINE":'django.db.backends.mysql',
-        'NAME':'fomodb',
-        'USER':'satkar',
-        'PASSWORD':'ironman',
-        'HOST':'localhost',
-        'PORT':'3306',
-    }
+    'default': dj_database_url.config(
+        default=os.environ.get('DATABASE_URL', 'mysql://satkar:ironman@localhost:3306/fomodb'),
+        conn_max_age=600
+    )
 }
 
 # Password validation
@@ -137,9 +137,13 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'mediafiles')
+
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 
 
 REST_FRAMEWORK = {
@@ -161,10 +165,7 @@ SIMPLE_JWT = {
 JWT_AUTH_COOKIE= "access_token"
 JWT_REFRESH_COOKIE = "refresh_token"
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-]
+CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:3000,http://127.0.0.1:3000').split(',')
 
 CORS_ALLOW_CREDENTIALS = True
 

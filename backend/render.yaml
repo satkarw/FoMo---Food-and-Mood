@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: fomo-backend
+    env: python
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn backend.wsgi:application --bind 0.0.0.0:$PORT"
+    plan: free # or 'starter' or 'standard'
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: fomodb-production
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: WEB_CONCURRENCY
+        value: 4 # Adjust based on your plan and expected traffic
+      - key: DJANGO_ALLOWED_HOSTS
+        value: # will be set by Render automatically (your app URL)
+      - key: FRONTEND_URL
+        value: # will be set by Render automatically (your frontend URL)
+      - key: CORS_ALLOWED_ORIGINS
+        value: # will be set by Render automatically (your frontend URL)
+      - key: DJANGO_DEBUG
+        value: "False"
+      # Add any other environment variables your Django app needs (e.g., Cloudinary API keys)
+  - type: postgres
+    name: fomodb-production
+    plan: free # or 'starter' or 'standard'
+    databaseName: fomodb-production
+    user: fomouser
