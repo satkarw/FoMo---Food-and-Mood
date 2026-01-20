@@ -28,14 +28,6 @@ urlpatterns = [
     path('api/profile/',include('profiles.urls')),
     path('api/posts/',include('post.urls')),
 ]
-#
-# if settings.DEBUG:
-#     import debug_toolbar
-#     urlpatterns debug_toolbar+= [
-#         path('__debug__/', include(debug_toolbar.urls)),
-#     ]
-#
-#     urlpatterns += static(
-#         settings.MEDIA_URL,
-#         document_root=settings.MEDIA_ROOT
-#     )
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

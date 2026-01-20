@@ -136,9 +136,9 @@ else:
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.mysql",
-            "NAME": "your_local_db_name",  # ← Change to your local DB name
+            "NAME": "fomodb",  # ← Change to your local DB name
             "USER": "root",  # ← Change to your MySQL user
-            "PASSWORD": "your_password",  # ← Change to your MySQL password
+            "PASSWORD": "roo123",  # ← Change to your MySQL password
             "HOST": "localhost",
             "PORT": "3306",
         }
