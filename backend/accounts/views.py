@@ -35,7 +35,7 @@ class CookieTokenObtainPairView(TokenObtainPairView):
             value = access,
             httponly=True,
             secure=False,  #change to True in production
-            samesite = "Lax",
+            samesite = None,
             max_age = 60 * 60 * 24 * 5,
 
         )
@@ -45,7 +45,7 @@ class CookieTokenObtainPairView(TokenObtainPairView):
             value = refresh,
             httponly=True,
             secure=False, #change to true in production
-            samesite = "Lax",
+            samesite = None,
             max_age = 7*24*3600
 
 
