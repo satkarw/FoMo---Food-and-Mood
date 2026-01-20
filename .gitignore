@@ -34,8 +34,7 @@ local_settings.py
 ##################################
 # Django migrations (keep __init__)
 ##################################
-**/migrations/**
-!**/migrations/__init__.py
+**/migrations/__pycache__/
 
 ##################################
 # Node / Next.js (for future frontend)
