@@ -9,7 +9,7 @@ from rest_framework.permissions import AllowAny
 from .models import Post, PostLike
 from .serializers import PostSerializer, PostCreateSerializer
 from profiles.models import Profile
-
+from rest_framework.parsers import MultiPartParser,FormParser
 
 class PostListView(APIView):
     permission_classes = [permissions.AllowAny]
@@ -47,6 +47,7 @@ class PostDetailPublicView(APIView):
 
 class PostCreateView(APIView):
     permission_classes = [permissions.IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
 
     def post(self, request):
         serializer = PostCreateSerializer(
