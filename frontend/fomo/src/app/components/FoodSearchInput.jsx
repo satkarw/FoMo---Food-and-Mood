@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Search } from 'lucide-react';
+import { apiFetch } from '@/app/lib/api';
 
 /**
  * Reusable Food Search Input Component
@@ -47,8 +48,7 @@ export default function FoodSearchInput({
     searchTimeoutRef.current = setTimeout(async () => {
       setIsSearchingFood(true);
       try {
-        const response = await fetch(`http://127.0.0.1:8000/api/menu/menu-items?search=${inputValue}`);
-        const data = await response.json();
+        const data = await apiFetch(`menu/menu-items?search=${inputValue}`);
         const query = inputValue.toLowerCase();
 
         // STRICT FILTER: only show foods starting with typed text

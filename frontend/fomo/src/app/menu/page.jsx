@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Search } from 'lucide-react';
 import MenuItemCard from '../components/MenuItemCard';
+import { apiFetch } from '@/app/lib/api';
 
 const FoMoMenu = () => {
   const [menuItems, setMenuItems] = useState([]);
@@ -16,9 +17,7 @@ const FoMoMenu = () => {
   useEffect(() => {
     const fetchMenuItems = async () => {
       try {
-        const response = await fetch('http://127.0.0.1:8000/api/menu/menu-items');
-        if (!response.ok) throw new Error('Failed to fetch menu items');
-        const data = await response.json();
+        const data = await apiFetch('menu/menu-items');
         setMenuItems(data);
         setFilteredItems(data);
       } catch (err) {

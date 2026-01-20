@@ -49,19 +49,7 @@ const handleSubmit = async (e) => {
   }
 };
 
-// //this method sets only cors cookies 
-// const handleSubmit = async (e) => {
-//     e.preventDefault();
-//   const res = await fetch('http://127.0.0.1:8000/api/accounts/login/', {
-//     method: 'POST',
-//     credentials: 'include',   // important: send/receive cookies
-//     headers: { 'Content-Type': 'application/json' },
-//     body: JSON.stringify(formData)
-//   });
-//   if (!res.ok) throw new Error('Login failed');
-//   return res.json(); // server set cookies; response may be small
 
-// }
 
 
   return (

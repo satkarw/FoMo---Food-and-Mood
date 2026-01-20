@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Image, X, Sparkles, Search } from 'lucide-react';
+import { Image, X, Sparkles } from 'lucide-react';
 import { apiFetch } from '@/app/lib/api';
 import FoodSearchInput from '@/app/components/FoodSearchInput';
 
@@ -13,55 +13,10 @@ export default function CreatePost({ onPostCreated }) {
   const [imagePreview, setImagePreview] = useState(null);
   const [selectedFood, setSelectedFood] = useState(null);
   const [foodSearchQuery, setFoodSearchQuery] = useState('');
-  const [foodSuggestions, setFoodSuggestions] = useState([]);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSearchingFood, setIsSearchingFood] = useState(false);
   const fileInputRef = useRef(null);
-  const searchTimeoutRef = useRef(null);
-
   
-
-  // Fetch food suggestions from  API
-  useEffect(() => {
-    if (searchTimeoutRef.current) {
-      clearTimeout(searchTimeoutRef.current);
-    }
-
-    if (foodSearchQuery.trim().length < 2) {
-      setFoodSuggestions([]);
-      return;
-    }
-
-    searchTimeoutRef.current = setTimeout(async () => {
-      setIsSearchingFood(true);
-      try {
-        const response = await fetch(`http://127.0.0.1:8000/api/menu/menu-items?search=${foodSearchQuery}`);
-        const data = await response.json();
-        const query = foodSearchQuery.toLowerCase();
-
-        // STRICT FILTER: only show foods starting with typed text
-        const filtered = data.filter(item =>
-        item.food?.name?.toLowerCase().startsWith(query)
-        );
-
-        // Take first 5 results
-        setFoodSuggestions(filtered.slice(0, 5));
-      } catch (error) {
-        console.error('Error searching foods:', error);
-        setFoodSuggestions([]);
-      } finally {
-        setIsSearchingFood(false);
-      }
-    }, 300);
-
-    return () => {
-      if (searchTimeoutRef.current) {
-        clearTimeout(searchTimeoutRef.current);
-      }
-    };
-  }, [foodSearchQuery]);
-
   const handleImageSelect = (e) => {
     const file = e.target.files[0];
     if (file) {
