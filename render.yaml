@@ -2,8 +2,8 @@ services:
   - type: web
     name: fomo-backend
     env: python
-    buildCommand: "./build.sh"
-    startCommand: "gunicorn backend.wsgi:application --bind 0.0.0.0:$PORT"
+    buildCommand: "cd backend && ./build.sh"
+    startCommand: "cd backend && gunicorn backend.wsgi:application --bind 0.0.0.0:$PORT"
     plan: free # or 'starter' or 'standard'
     envVars:
       - key: DATABASE_URL
@@ -23,7 +23,7 @@ services:
       - key: DJANGO_DEBUG
         value: "False"
       # Add any other environment variables your Django app needs (e.g., Cloudinary API keys)
-  - type: postgres
+  - type: psql
     name: fomodb-production
     plan: free # or 'starter' or 'standard'
     databaseName: fomodb-production
