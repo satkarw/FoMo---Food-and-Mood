@@ -9,6 +9,8 @@ class FoodSerializer(serializers.ModelSerializer):
         model = Food
         fields = '__all__'
         read_only_fields = ('id',)
+        
+        
 
 class MenuItemSerializer(serializers.ModelSerializer):
     food = FoodSerializer(read_only=True)

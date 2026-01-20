@@ -18,5 +18,6 @@ export async function apiFetch(endpoint, options = {}) {
     throw { status: res.status, data: errorData };
   }
 
-  return res.json();
+   const text = await res.text();
+  return text ? JSON.parse(text) : {};
 }

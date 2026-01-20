@@ -5,6 +5,8 @@ export default function NotificationToast({ message, type }) {
     info: "bg-blue-600",
   };
 
+  
+
   return (
     <div
       className={`

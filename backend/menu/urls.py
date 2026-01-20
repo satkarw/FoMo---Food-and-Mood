@@ -8,4 +8,5 @@ urlpatterns = [
 
     path("menu-items",MenuItemListApiView.as_view(),name="menu-list-create"),
     path("menu-items/<int:pk>",MenuItemRetrieveUpdateDestroyAPIView.as_view(),name="menu-detail"),
+    path("food/get-or-create/",FoodGetOrCreateView.as_view()),
 ]

@@ -13,7 +13,11 @@ export default function Navbar({ onAuthClick }) {
   const router = useRouter()
 
   // Close profile menu when clicking outside
+  
+
+
   useEffect(() => {
+
     function handleClickOutside(event) {
       if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
         setShowProfileMenu(false);
@@ -40,6 +44,7 @@ export default function Navbar({ onAuthClick }) {
   const handleLogout = () => {
     logout();
     setShowProfileMenu(false);
+    
   };
 
   return (
@@ -74,9 +79,10 @@ export default function Navbar({ onAuthClick }) {
           {/* Desktop Auth Section */}
           <div className="hidden md:flex items-center gap-3">
             {loading ? (
-              <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse"></div>
+              <div className="w-9 h-9 rounded-full bg-gray-200 animate-pulse"></div>
+              
             ) : user ? (
-              <div className="relative" ref={profileMenuRef}>
+              <div className="relative " ref={profileMenuRef}>
                 <button
                   onClick={() => setShowProfileMenu(!showProfileMenu)}
                   className="flex items-center gap-2 px-4 py-2 rounded-xl cursor-pointer hover:bg-[#FFF5E1] transition-all duration-200 group"
@@ -85,7 +91,7 @@ export default function Navbar({ onAuthClick }) {
                     <CircleUser size={20} className="text-white" />
                   </div>
                   <span className="text-[#333333] font-['Open_Sans'] group-hover:text-[#FF6B35] transition-colors" style={{ fontWeight: 600 }}>
-                    {user.firstName}
+                    {user.username}
                   </span>
                 </button>
 
@@ -101,19 +107,19 @@ export default function Navbar({ onAuthClick }) {
                       </p>
                     </div>
                     <a
-                      href="#profile"
+                      href={`/profile/${user.id}`}
                       className="block px-4 py-2.5 text-[#666666] hover:bg-[#FFF5E1] hover:text-[#FF6B35] transition-colors font-['Open_Sans']"
                     >
                       My Profile
                     </a>
-                    <a
+                    {/* <a
                       href="#settings"
                       className="block px-4 py-2.5 text-[#666666] hover:bg-[#FFF5E1] hover:text-[#FF6B35] transition-colors font-['Open_Sans']"
                     >
                       Settings
-                    </a>
+                    </a> */}
                     <a
-                      href="#orders"
+                      href="/cart"
                       className="block px-4 py-2.5 text-[#666666] hover:bg-[#FFF5E1] hover:text-[#FF6B35] transition-colors font-['Open_Sans']"
                     >
                       My Orders
@@ -203,7 +209,7 @@ export default function Navbar({ onAuthClick }) {
                     </div>
                   </div>
                   <a
-                    href="#profile"
+                    href={`/profile/${user.id}`}
                     className="block px-4 py-3 text-[#666666] hover:bg-[#FFF5E1] hover:text-[#FF6B35] rounded-xl transition-colors font-['Open_Sans']"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >

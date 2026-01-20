@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'profiles',
     'cart',
     'orders',
+    'post',
     # 'reservation'
     'debug_toolbar',
 

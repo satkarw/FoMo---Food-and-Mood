@@ -53,6 +53,7 @@ const FoMoMenu = () => {
     setFilteredItems(filtered);
   }, [searchQuery, filterType, menuItems]);
 
+    console.log(filteredItems)
   return (
     <div className="min-h-screen w-full" style={{ backgroundColor: '#feefd3' }}>
       {/* Animations */}

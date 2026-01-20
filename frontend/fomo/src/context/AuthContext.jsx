@@ -47,6 +47,8 @@ export function AuthProvider({ children }) {
     fetchUser();
   }, []);
 
+  console.log(user)
+
   return (
     <AuthContext.Provider value={{ user, login, register, logout, loading }}>
       {children}

@@ -11,7 +11,7 @@ class ProfileView(APIView):
 
     def get(self, request):
         profile = get_object_or_404(Profile, user=request.user)
-        serializer = ProfileSerializer(profile)
+        serializer = ProfileSerializer(profile,context={'request': request})
         return Response(serializer.data)
 
     def patch(self, request):
@@ -21,6 +21,15 @@ class ProfileView(APIView):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class OtherUserProfileView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get(self, request,userId):
+        profile = get_object_or_404(Profile, user=userId)
+        serializer = ProfileSerializer(profile,context={'request': request})
+        return Response(serializer.data)
+    
 
 class FavouritesToggleView(APIView):
     permission_classes = [permissions.IsAuthenticated]
