@@ -80,9 +80,9 @@ export default function PostCard({ post, currentUser, onDelete, onUpdate }) {
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-gradient-to-br from-[#FF6B35] to-[#E55A25] rounded-full flex items-center justify-center">
             {
-              getMediaUrl(post.user.profile_picture)? 
+              post.user.profile_picture?
               <img
-                  src={getMediaUrl(post.user.profile_picture) || "/default-avatar.png"}
+                  src={post.user.profile_picture || "/default-avatar.png"}
                   alt={post.user.username}
                   className="w-10 h-10 rounded-full object-cover"
                 />

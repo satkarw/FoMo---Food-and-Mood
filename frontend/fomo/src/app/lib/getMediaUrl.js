@@ -8,5 +8,6 @@ export const getMediaUrl = (path) => {
   const baseUrl = apiUrl.replace('api/', '');
   
   // Combine the base URL with the media path
-  return `${baseUrl}${path}`;
+//  return `${baseUrl}${path}`;
+return `${path}`;
 };
