@@ -2,7 +2,7 @@ from django.db import migrations
 import os
 
 def create_superuser(apps, schema_editor):
-    User = apps.get_model('auth', 'User')
+    User = apps.get_model('accounts', 'User')
 
     username = os.getenv("DJANGO_SU_USERNAME", "admin")
     email = os.getenv("DJANGO_SU_EMAIL", "admin@gmail.com")
