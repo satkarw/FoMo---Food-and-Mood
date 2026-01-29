@@ -241,8 +241,9 @@ export default function Navbar({ onAuthClick }) {
                 <>
                   <button
                     onClick={() => {
-                      onAuthClick?.('login');
+
                       setIsMobileMenuOpen(false);
+                      router.push("/login");
                     }}
                     className="w-full flex items-center cursor-pointer justify-center gap-2 px-4 py-3 rounded-xl text-[#FF6B35] border-2 border-[#FF6B35] hover:bg-[#FFF5E1] transition-all duration-200 font-['Open_Sans']"
                     style={{ fontWeight: 600 }}
@@ -252,11 +253,14 @@ export default function Navbar({ onAuthClick }) {
                   </button>
                   <button
                     onClick={() => {
-                      onAuthClick?.('register');
+
                       setIsMobileMenuOpen(false);
+                      router.push("/registration");
                     }}
                     className="w-full px-4 py-3 bg-[#FF6B35] cursor-pointer text-white rounded-xl hover:bg-[#E55A25] hover:shadow-[0_4px_12px_rgba(255,107,53,0.4)] transition-all duration-200 font-['Open_Sans']"
                     style={{ fontWeight: 600 }}
+
+
                   >
                     Sign Up
                   </button>
