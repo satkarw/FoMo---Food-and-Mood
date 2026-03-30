@@ -129,6 +129,7 @@ if DATABASE_URL:
             default=DATABASE_URL,
             conn_max_age=600,
             conn_health_checks=True,
+            ssl_require=True,
         )
     }
 else:
@@ -136,9 +137,9 @@ else:
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.mysql",
-            "NAME": "fomodb",  # ← Change to your local DB name
-            "USER": "root",  # ← Change to your MySQL user
-            "PASSWORD": "roo123",  # ← Change to your MySQL password
+            "NAME": "fomodb",
+            "USER": "root",
+            "PASSWORD": "roo123",
             "HOST": "localhost",
             "PORT": "3306",
         }
