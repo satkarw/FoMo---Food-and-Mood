@@ -11,6 +11,7 @@ export default function LoginForm() {
   const { notify } = useNotify();
   const { login } = useAuth(); // <-- make sure to destructure login
   const [showPassword, setShowPassword] = useState(false);
+  const [loading,setLoading] = useState(false)
   const [formData, setFormData] = useState({
     username: "",
     password: ""
@@ -27,6 +28,7 @@ export default function LoginForm() {
 
   // this method isnt setting cookies
 const handleSubmit = async (e) => {
+  setLoading(true);
   e.preventDefault();
   
   console.log("Starting login with formData:", formData);
@@ -34,6 +36,7 @@ const handleSubmit = async (e) => {
   try {
     await login(formData);
     console.log("Login successful!");
+    setLoading(false);
     notify("Logged in successfully!");
     router.push("/")
     
@@ -111,12 +114,23 @@ const handleSubmit = async (e) => {
       </div>
 
       {/* Submit */}
+      {
       <button
         type="submit"
-        className="w-full bg-[#FF6B35] text-white py-3.5 rounded-2xl font-['Poppins'] font-semibold transition-all duration-200 hover:bg-[#E55A25] hover:shadow-[0_6px_20px_rgba(255,107,53,0.4)] active:scale-[0.98] shadow-[0_4px_14px_rgba(255,107,53,0.3)]"
+        disabled={loading}
+        className={`w-full text-white py-3.5 rounded-2xl font-['Poppins'] font-semibold transition-all duration-200  hover:shadow-[0_6px_20px_rgba(255,107,53,0.4)] active:scale-[0.98] shadow-[0_4px_14px_rgba(255,107,53,0.3)]  ${loading? " bg-[#B98A79] ":"bg-[#FF6B35] hover:bg-[#E55A25]"}`  }
       >
-        Sign In
-      </button>
+       { 
+        loading? (
+          <div className="flex flex-row justify-center items-center gap-4">
+           <div className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin border-white" />
+              <span>Tik Tok Tik...</span>
+          </div>
+        ):
+        (<span>Sign In</span>)
+        
+        }
+      </button>}
 
       {/* Switch */}
       <p className="text-center text-[#666666] font-['Open_Sans'] mt-6">
