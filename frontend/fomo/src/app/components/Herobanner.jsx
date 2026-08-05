@@ -164,22 +164,39 @@ export default function FoMoHero() {
           </p>
         </div>
 
-       { loading ? 
-       <div className={mounted?'fade-in-up-delay-2' : 'opacity-0'}>
-          <p className="text-xl md:text-xl lg:text-xl text-gray-700 mb-4 max-w-2xl mx-auto leading-relaxed">
-            Since I am using Render Free database, it might take time to Load or could be deactivated already.
-          </p> 
-          <div className="text-center py-20">
-            <div
-              className="inline-block w-12 h-12 border-4 border-t-transparent rounded-full animate-spin"
-              style={{ borderColor: '#FF6B35', borderTopColor: 'transparent' }}
-            />
-            <p className="text-xl md:text-xl lg:text-xl text-[#FF6B35] font-bold mb-12 max-w-2xl mx-auto leading-relaxed border border-[#FF6B35] py-3 rounded-full '">
-             Please wait till the database loads...
-            </p>
-          </div>
-        </div> : error ? <p className='text-xl md:text-xl lg:text-xl text-red-800 font-bold mb-12 max-w-2xl mx-auto leading-relaxed border py-3 rounded-full bg-red-200' >Sorry the database seems to be not working</p>:null
-        }
+{/* ---------------------Health checkup -------------------------------  */}
+{
+  loading ? (
+    <div className={mounted ? "fade-in-up-delay-2 flex justify-center mt-2 mb-8" : "opacity-0 mb-8"}>
+      <div
+        className="flex items-center gap-3 rounded-full px-5 py-2.5"
+        style={{ backgroundColor: 'rgba(255, 107, 53, 0.08)' }}
+      >
+        <div
+          className="w-4 h-4 rounded-full border-2 border-t-transparent animate-spin flex-shrink-0"
+          style={{ borderColor: '#FF6B35', borderTopColor: 'transparent' }}
+        />
+        <p className="text-sm text-gray-600">
+          Warming things up, first load can take a moment
+        </p>
+      </div>
+    </div>
+  ) : error ? (
+    <div className={mounted ? "fade-in-up-delay-2 flex justify-center mt-2 mb-8" : "opacity-0 mb-8"}>
+      <div
+        className="flex items-center gap-3 rounded-full px-5 py-2.5 border"
+        style={{ borderColor: 'rgba(255, 107, 53, 0.3)', backgroundColor: 'rgba(255, 107, 53, 0.06)' }}
+      >
+       
+        <p className="text-md text-red-600 font-bold">
+          Sorry, Couldn't reach the kitchen.
+          Result of free database hosting.
+        </p>
+      </div>
+    </div>
+  ) : null
+}
+{/* database checkup end----------------- */}
 
         {/* Buttons with staggered animation */}
         <div className={`${mounted ? 'fade-in-up-delay-3' : 'opacity-0'} flex flex-col sm:flex-row gap-6 justify-center items-center`}>
