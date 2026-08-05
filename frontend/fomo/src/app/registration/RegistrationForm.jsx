@@ -11,6 +11,7 @@ export default function RegistrationForm() {
   const router = useRouter()
   const { notify } = useNotify();
   const [showPassword, setShowPassword] = useState(false);
+  const [loading,setLoading] = useState(false)
   const [formData, setFormData] = useState({
     username: "",
     email: "",
@@ -30,8 +31,10 @@ export default function RegistrationForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
     await register(formData);
+    setLoading(false);
     notify("Registration successful!");
     router.push("/login")
   } catch (err) {
@@ -171,22 +174,34 @@ export default function RegistrationForm() {
       </div>
 
       {/* Submit */}
+     {
       <button
         type="submit"
-        className="w-full bg-[#FF6B35] text-white py-3.5 rounded-2xl font-['Poppins'] font-semibold hover:bg-[#E55A25] hover:shadow-[0_6px_20px_rgba(255,107,53,0.4)] active:scale-[0.98] shadow-[0_4px_14px_rgba(255,107,53,0.3)]"
+        disabled={loading}
+        className={`w-full text-white py-3.5 rounded-2xl font-['Poppins'] font-semibold transition-all duration-200  hover:shadow-[0_6px_20px_rgba(255,107,53,0.4)] active:scale-[0.98] shadow-[0_4px_14px_rgba(255,107,53,0.3)]  ${loading? " bg-[#B98A79] ":"bg-[#FF6B35] hover:bg-[#E55A25]"}`  }
       >
-        Create Account
-      </button>
+       { 
+        loading? (
+          <div className="flex flex-row justify-center items-center gap-4">
+           <div className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin border-white" />
+              <span>Tik Tok Tik...</span>
+          </div>
+        ):
+        (<span>Create Account</span>)
+        
+        }
+      </button>}
 
       {/* Sign In */}
       <p className="text-center text-[#666666] font-['Open_Sans'] mt-6">
         Already have an account?{" "}
-        <a
-          href="#"
-          className="text-[#FF6B35] hover:text-[#E55A25] font-semibold"
+       <button
+          type="button"
+          onClick={() => router.push("/login")}
+          className="text-[#FF6B35] hover:text-[#E55A25] font-semibold transition-colors duration-200"
         >
-          Sign In
-        </a>
+         login
+        </button>
       </p>
     </form>
   );
