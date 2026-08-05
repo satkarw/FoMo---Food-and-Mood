@@ -1,18 +1,40 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { use, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Logo from "../../../public/logo.png";
 import { UtensilsCrossed } from 'lucide-react';
+import { apiFetch } from '../lib/api';
+import { p } from 'motion/react-client';
 
 export default function FoMoHero() {
   const [mounted, setMounted] = useState(false);
   const router = useRouter();
+  const[health,setHealth] = useState([]);
+  const[error,setError] = useState(null);
+  const[loading,setLoading]= useState(true);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    const fetchHealth = async () => {
+      try {
+        const data = await apiFetch('menu/food/1');
+        setHealth(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchHealth();
+  }, []);
+
+
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden flex items-center justify-center" style={{ backgroundColor: '#feefd3' }}>
@@ -141,6 +163,23 @@ export default function FoMoHero() {
             Eat your favourite food, with your new partner
           </p>
         </div>
+
+       { loading ? 
+       <div className={mounted?'fade-in-up-delay-2' : 'opacity-0'}>
+          <p className="text-xl md:text-xl lg:text-xl text-gray-700 mb-4 max-w-2xl mx-auto leading-relaxed">
+            Since I am using Render Free database, it might take time to Load or could be deactivated already.
+          </p> 
+          <div className="text-center py-20">
+            <div
+              className="inline-block w-12 h-12 border-4 border-t-transparent rounded-full animate-spin"
+              style={{ borderColor: '#FF6B35', borderTopColor: 'transparent' }}
+            />
+            <p className="text-xl md:text-xl lg:text-xl text-[#FF6B35] font-bold mb-12 max-w-2xl mx-auto leading-relaxed border border-[#FF6B35] py-3 rounded-full '">
+             Please wait till the database loads...
+            </p>
+          </div>
+        </div> : error ? <p className='text-xl md:text-xl lg:text-xl text-red-800 font-bold mb-12 max-w-2xl mx-auto leading-relaxed border py-3 rounded-full bg-red-200' >Sorry the database seems to be not working</p>:null
+        }
 
         {/* Buttons with staggered animation */}
         <div className={`${mounted ? 'fade-in-up-delay-3' : 'opacity-0'} flex flex-col sm:flex-row gap-6 justify-center items-center`}>
