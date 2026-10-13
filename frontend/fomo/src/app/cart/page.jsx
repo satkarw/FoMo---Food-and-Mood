@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import {
   ShoppingCart,
   Plus,
@@ -27,6 +27,10 @@ export default function CartPage() {
   const [updating, setUpdating] = useState(null);
   const [error, setError] = useState(null);
   const [placingOrder, setPlacingOrder] = useState(false);
+  const quantityTimersRef = useRef(new Map());
+  const pendingQuantitiesRef = useRef(new Map());
+  const quantityRequestsRef = useRef(new Map());
+  const confirmedQuantitiesRef = useRef(new Map());
 
   /* ---------------- FETCH CART + MENU ---------------- */
   useEffect(() => {
@@ -51,6 +55,9 @@ export default function CartPage() {
         apiFetch("menu/menu-items"),
       ]);
 
+      confirmedQuantitiesRef.current = new Map(
+        cartData.items.map((item) => [item.id, item.quantity])
+      );
       setCart(cartData);
       setMenuItems(menuData);
     } catch (err) {
@@ -105,25 +112,112 @@ export default function CartPage() {
   }, [mergedItems]);
 
   /* ---------------- UPDATE QUANTITY ---------------- */
-  const updateQuantity = async (itemId, newQuantity) => {
-    if (newQuantity < 1) return;
+  const persistQuantity = (itemId) => {
+    const activeRequest = quantityRequestsRef.current.get(itemId);
+    if (activeRequest) return activeRequest;
 
-    try {
-      setUpdating(itemId);
-      setError(null);
-      
-      await apiFetch(`cart/item/${itemId}/`, {
-        method: "PATCH",
-        body: JSON.stringify({ quantity: newQuantity }),
-      });
-      
-      await fetchCart();
-    } catch (err) {
-      setError("Failed to update item");
-      console.error(err);
-    } finally {
-      setUpdating(null);
+    if (!pendingQuantitiesRef.current.has(itemId)) {
+      return Promise.resolve(true);
     }
+
+    const quantity = pendingQuantitiesRef.current.get(itemId);
+    pendingQuantitiesRef.current.delete(itemId);
+
+    const request = apiFetch(`cart/item/${itemId}/`, {
+      method: "PATCH",
+      body: JSON.stringify({ quantity }),
+    }).then(
+      () => {
+        confirmedQuantitiesRef.current.set(itemId, quantity);
+        return true;
+      },
+      (err) => {
+        if (!pendingQuantitiesRef.current.has(itemId)) {
+          const confirmedQuantity = confirmedQuantitiesRef.current.get(itemId);
+          if (confirmedQuantity !== undefined) {
+            setCart((currentCart) => currentCart && ({
+              ...currentCart,
+              items: currentCart.items.map((item) =>
+                item.id === itemId
+                  ? { ...item, quantity: confirmedQuantity }
+                  : item
+              ),
+            }));
+          }
+          setError("Failed to update item");
+        }
+        console.error(err);
+        return false;
+      }
+    ).finally(() => {
+      quantityRequestsRef.current.delete(itemId);
+      if (pendingQuantitiesRef.current.has(itemId)) {
+        void persistQuantity(itemId);
+      }
+    });
+
+    quantityRequestsRef.current.set(itemId, request);
+    return request;
+  };
+
+  const flushQuantity = async (itemId) => {
+    const timer = quantityTimersRef.current.get(itemId);
+    if (timer) {
+      clearTimeout(timer);
+      quantityTimersRef.current.delete(itemId);
+    }
+
+    let succeeded = true;
+    while (
+      pendingQuantitiesRef.current.has(itemId) ||
+      quantityRequestsRef.current.has(itemId)
+    ) {
+      const activeRequest = quantityRequestsRef.current.get(itemId);
+      const saved = activeRequest
+        ? await activeRequest
+        : await persistQuantity(itemId);
+      if (!saved) succeeded = false;
+    }
+    return succeeded;
+  };
+
+  const flushPendingQuantities = async () => {
+    const itemIds = new Set([
+      ...quantityTimersRef.current.keys(),
+      ...pendingQuantitiesRef.current.keys(),
+      ...quantityRequestsRef.current.keys(),
+    ]);
+    const results = await Promise.all(
+      [...itemIds].map((itemId) => flushQuantity(itemId))
+    );
+    return results.every(Boolean);
+  };
+
+  const changeQuantity = (itemId, difference) => {
+    const currentQuantity = pendingQuantitiesRef.current.get(itemId)
+      ?? cart?.items.find((item) => item.id === itemId)?.quantity;
+    if (currentQuantity === undefined) return;
+
+    const quantity = currentQuantity + difference;
+    if (quantity < 1) return;
+
+    pendingQuantitiesRef.current.set(itemId, quantity);
+    setCart((currentCart) => currentCart && ({
+      ...currentCart,
+      items: currentCart.items.map((item) =>
+        item.id === itemId ? { ...item, quantity } : item
+      ),
+    }));
+    setError(null);
+
+    const previousTimer = quantityTimersRef.current.get(itemId);
+    if (previousTimer) clearTimeout(previousTimer);
+
+    const timer = setTimeout(() => {
+      quantityTimersRef.current.delete(itemId);
+      void persistQuantity(itemId);
+    }, 350);
+    quantityTimersRef.current.set(itemId, timer);
   };
 
   /* ---------------- REMOVE ITEM ---------------- */
@@ -131,11 +225,14 @@ export default function CartPage() {
     try {
       setUpdating(itemId);
       setError(null);
+
+      if (!(await flushQuantity(itemId))) return;
       
       await apiFetch(`cart/item/${itemId}/`, {
         method: "DELETE",
       });
-      
+
+      confirmedQuantitiesRef.current.delete(itemId);
       await fetchCart();
     } catch (err) {
       setError("Failed to remove item");
@@ -155,6 +252,11 @@ export default function CartPage() {
     try {
       setPlacingOrder(true);
       setError(null);
+
+      if (!(await flushPendingQuantities())) {
+        setError("Failed to save cart quantities. Please try again.");
+        return;
+      }
 
       await apiFetch("orders/place/", {
         method: "POST",
@@ -385,7 +487,7 @@ export default function CartPage() {
                       <div className="flex flex-col items-end justify-between">
                         <button
                           onClick={() => removeItem(item.id)}
-                          disabled={updating === item.id}
+                          disabled={placingOrder || updating === item.id}
                           className="text-red-500 hover:text-red-700 transition-colors disabled:opacity-50"
                           title="Remove item"
                         >
@@ -394,10 +496,10 @@ export default function CartPage() {
 
                         <div className="flex items-center gap-2">
                           <button
-                            onClick={() =>
-                              updateQuantity(item.id, item.quantity - 1)
+                            onClick={() => changeQuantity(item.id, -1)}
+                            disabled={
+                              placingOrder || item.quantity <= 1 || updating === item.id
                             }
-                            disabled={item.quantity <= 1 || updating === item.id}
                             className="w-8 h-8 bg-gray-200 hover:bg-gray-300 rounded-lg flex items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             <Minus size={14} />
@@ -408,10 +510,8 @@ export default function CartPage() {
                           </span>
 
                           <button
-                            onClick={() =>
-                              updateQuantity(item.id, item.quantity + 1)
-                            }
-                            disabled={updating === item.id}
+                            onClick={() => changeQuantity(item.id, 1)}
+                            disabled={placingOrder || updating === item.id}
                             className="w-8 h-8 bg-[#FF6B35] hover:bg-[#ff5722] text-white rounded-lg flex items-center justify-center transition-colors disabled:opacity-50"
                           >
                             <Plus size={14} />

@@ -9,6 +9,7 @@ import { apiFetch } from '../lib/api';
 import { p } from 'motion/react-client';
 
 export default function FoMoHero() {
+  
   const [mounted, setMounted] = useState(false);
   const router = useRouter();
   const[health,setHealth] = useState([]);

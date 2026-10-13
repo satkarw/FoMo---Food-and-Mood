@@ -23,7 +23,8 @@ SECRET_KEY = os.environ.get(
     "django-insecure-dev-key-change-this"
 )
 
-DEBUG = os.environ.get("DJANGO_DEBUG", "False").lower() == "true"
+# Local development defaults to DEBUG=True; Render explicitly sets this to False.
+DEBUG = os.environ.get("DJANGO_DEBUG", "True").lower() in {"true", "1", "yes"}
 
 ALLOWED_HOSTS = os.environ.get(
     "DJANGO_ALLOWED_HOSTS",
@@ -117,33 +118,38 @@ TEMPLATES = [
 ]
 
 # ------------------------------------------------------------------------------
-# DATABASE (RENDER-FIRST)
+# DATABASE
 # ------------------------------------------------------------------------------
 
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
 if DATABASE_URL:
-    # Production: Auto-detect PostgreSQL or MySQL from DATABASE_URL
+    # Render: use its managed database URL (PostgreSQL) and require SSL outside
+    # local development.
     DATABASES = {
         "default": dj_database_url.config(
             default=DATABASE_URL,
             conn_max_age=600,
             conn_health_checks=True,
-            ssl_require=True,
+            ssl_require=not DEBUG,
         )
     }
-else:
-    # Local development: MySQL
+elif DEBUG:
+    # Local development: SQLite requires no separate database server or driver.
     DATABASES = {
         "default": {
-            "ENGINE": "django.db.backends.mysql",
-            "NAME": "fomodb",
-            "USER": "root",
-            "PASSWORD": "roo123",
-            "HOST": "localhost",
-            "PORT": "3306",
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
         }
     }
+else:
+    # Do not let a production deployment accidentally start on an ephemeral DB.
+    from django.core.exceptions import ImproperlyConfigured
+
+    raise ImproperlyConfigured(
+        "DATABASE_URL must be set when DJANGO_DEBUG is false."
+    )
+
 # ------------------------------------------------------------------------------
 # PASSWORD VALIDATION
 # ------------------------------------------------------------------------------
@@ -180,7 +186,12 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 # CLOUDINARY
 # ------------------------------------------------------------------------------
 
-DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
+# Keep media on disk locally; use Cloudinary in deployment.
+DEFAULT_FILE_STORAGE = (
+    "django.core.files.storage.FileSystemStorage"
+    if DEBUG
+    else "cloudinary_storage.storage.MediaCloudinaryStorage"
+)
 
 # ------------------------------------------------------------------------------
 # DJANGO REST FRAMEWORK & JWT
